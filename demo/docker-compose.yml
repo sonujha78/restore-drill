@@ -1,0 +1,26 @@
+# Demo environment for restore-drill. Everything here is prefixed rdr-.
+name: rdr-demo
+
+services:
+  rdr-pg:
+    image: postgres:16-alpine
+    container_name: rdr-pg
+    environment:
+      POSTGRES_USER: rdr
+      POSTGRES_DB: rdrdb
+      POSTGRES_PASSWORD: ${RDR_PG_PASSWORD:?run demo/up.sh first}
+    ports:
+      - "127.0.0.1:19432:5432"
+    volumes:
+      - rdr-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U rdr -d rdrdb"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    labels:
+      com.restore-drill.project: "restore-drill"
+
+volumes:
+  rdr-pg-data:
+    name: rdr-pg-data
