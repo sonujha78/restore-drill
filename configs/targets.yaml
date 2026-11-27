@@ -1,0 +1,97 @@
+# Demo targets for restore-drill.
+# No secrets in this file. Connection details come from environment variables,
+# and only the variable NAME is written here (keys ending in _env).
+targets:
+  - name: pg-orders
+    type: postgres_dump
+    location:
+      dir: demo/backups/pg-orders
+      pattern: "orders-*.dump"
+    manifest: SHA256SUMS
+    frequency: 1h
+    retention: {min_copies: 3, max_copies: 7}
+    rpo: 2h
+    rto: 60s
+    min_bytes: 2048
+    canary: {table: rdr_canary, column: written_at}
+    structure:
+      tables:
+        - {name: customers, columns: [id, name, email]}
+        - {name: orders, columns: [id, customer_id, amount, created_at]}
+        - {name: rdr_canary, columns: [id, written_at]}
+    content:
+      row_counts:
+        - {table: customers, min: 50, max: 5000}
+        - {table: orders, min: 200, max: 50000}
+    app_checks:
+      - name: no-negative-amounts
+        query: "SELECT count(*) FROM orders WHERE amount < 0"
+        expect: "0"
+    options:
+      container: rdr-pg
+
+  - name: sqlite-notes
+    type: sqlite
+    location:
+      dir: demo/backups/sqlite-notes
+      pattern: "notes-*.db"
+    manifest: SHA256SUMS
+    frequency: 1h
+    retention: {min_copies: 3, max_copies: 7}
+    rpo: 2h
+    rto: 60s
+    min_bytes: 4096
+    canary: {table: rdr_canary, column: written_at}
+    structure:
+      tables:
+        - {name: notes, columns: [id, title, body, created_at]}
+        - {name: rdr_canary, columns: [id, written_at]}
+    content:
+      row_counts:
+        - {table: notes, min: 100, max: 100000}
+    app_checks:
+      - name: no-empty-titles
+        query: "SELECT count(*) FROM notes WHERE title = ''"
+        expect: "0"
+
+  - name: files-tar
+    type: tar_gz
+    location:
+      dir: demo/backups/files-tar
+      pattern: "files-*.tar.gz"
+    manifest: SHA256SUMS
+    frequency: 1h
+    retention: {min_copies: 3, max_copies: 7}
+    rpo: 2h
+    rto: 60s
+    min_bytes: 1024
+    canary: {path: data/canary.txt}
+    structure:
+      paths: [data/canary.txt, data/docs, config/app.conf]
+    app_checks:
+      - name: app-conf-has-schema-version
+        command: "grep -c schema_version config/app.conf"
+        expect: "1"
+
+  # Deliberately has no canary: the drill must report this target as unverified.
+  - name: sqlite-nocanary
+    type: sqlite
+    location:
+      dir: demo/backups/sqlite-nocanary
+      pattern: "nocanary-*.db"
+    manifest: SHA256SUMS
+    frequency: 1h
+    retention: {min_copies: 3, max_copies: 7}
+    rpo: 2h
+    rto: 60s
+    min_bytes: 4096
+    structure:
+      tables:
+        - {name: notes, columns: [id, title, body, created_at]}
+    content:
+      row_counts:
+        - {table: notes, min: 100, max: 100000}
+    app_checks:
+      - name: no-empty-titles
+        query: "SELECT count(*) FROM notes WHERE title = ''"
+        expect: "0"
