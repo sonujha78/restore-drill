@@ -15,7 +15,7 @@ import (
 	"github.com/sonujha78/restore-drill/internal/version"
 )
 
-const usage = "usage: restore-drill <version | validate --config FILE | artifact --config FILE --target NAME [--file PATH] [--manifest PATH]>"
+const usage = "usage: restore-drill <version | validate --config FILE | artifact --config FILE --target NAME [--file PATH] [--manifest PATH] | sandbox <create --base DIR | check --dir DIR | remove --dir DIR>>"
 
 // Run executes one command and returns the process exit code.
 func Run(args []string, stdout, stderr io.Writer) int {
@@ -31,6 +31,8 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return validate(args[1:], stdout, stderr)
 	case "artifact":
 		return artifactCmd(args[1:], stdout, stderr)
+	case "sandbox":
+		return sandboxCmd(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "restore-drill: unknown command %q\n%s\n", args[0], usage)
 		return exitcode.ToolError
