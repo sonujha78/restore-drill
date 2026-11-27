@@ -3,3 +3,7 @@
 *.test
 *.out
 .DS_Store
+/.env
+/.rdr/
+/demo/backups/
+/demo/sandbox/
