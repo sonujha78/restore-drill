@@ -8,6 +8,9 @@ import (
 	"github.com/sonujha78/restore-drill/internal/sandbox"
 )
 
+// SQLiteFile is the name the restored database gets inside the sandbox.
+const SQLiteFile = "restored.db"
+
 func init() { Register("sqlite", restoreSQLite) }
 
 // restoreSQLite copies the database file into the sandbox as restored.db.
@@ -26,7 +29,7 @@ func restoreSQLite(src string, sb *sandbox.Sandbox, lim Limits) (Result, error) 
 	if st.Size() > lim.MaxBytes {
 		return res, fmt.Errorf("backup is %d bytes, above the limit %d", st.Size(), lim.MaxBytes)
 	}
-	out, err := sb.CreateFile("restored.db", 0o600)
+	out, err := sb.CreateFile(SQLiteFile, 0o600)
 	if err != nil {
 		return res, err
 	}
