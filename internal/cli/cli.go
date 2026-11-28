@@ -15,7 +15,7 @@ import (
 	"github.com/sonujha78/restore-drill/internal/version"
 )
 
-const usage = "usage: restore-drill <version | validate --config FILE | artifact --config FILE --target NAME [--file PATH] [--manifest PATH] | restore --config FILE --target NAME (--sandbox DIR | --pgdb NAME) | pgsandbox <create|check|remove> --container rdr-NAME [--db NAME] | verify --config FILE --target NAME --sandbox DIR [--now RFC3339] | sandbox <create --base DIR | check --dir DIR | remove --dir DIR>>"
+const usage = "usage: restore-drill <version | validate --config FILE | artifact --config FILE --target NAME [--file PATH] [--manifest PATH] | restore --config FILE --target NAME (--sandbox DIR | --pgdb NAME) | pgsandbox <create|check|remove> --container rdr-NAME [--db NAME] | verify --config FILE --target NAME (--sandbox DIR | --pgdb NAME) [--now RFC3339] | sandbox <create --base DIR | check --dir DIR | remove --dir DIR>>"
 
 // Run executes one command and returns the process exit code.
 func Run(args []string, stdout, stderr io.Writer) int {

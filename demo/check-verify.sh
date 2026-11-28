@@ -109,7 +109,7 @@ vcase "tar, app.conf without schema_version" files-tar 2 $'fail +app:app-conf-ha
 
 echo "== postgres and refusals"
 out="$("$BIN" verify --config "$CFG" --target pg-orders 2>&1)"; code=$?
-if [ "$code" -eq 1 ] && grep -q 'not implemented' <<<"$out"; then ok "pg-orders: unverified, not implemented yet (exit 1)"; else bad "pg-orders: exit $code"; fi
+if [ "$code" -eq 3 ] && grep -q -- '--pgdb' <<<"$out"; then ok "pg-orders without --pgdb: exit 3 with a hint (postgres is covered by check-pgverify.sh)"; else bad "pg-orders without --pgdb: exit $code"; fi
 out="$("$BIN" verify --config "$CFG" --target sqlite-notes --sandbox "$tmp" 2>&1)"; code=$?
 if [ "$code" -eq 3 ] && grep -q refusing <<<"$out"; then ok "plain directory refused (exit 3)"; else bad "plain dir: exit $code"; fi
 

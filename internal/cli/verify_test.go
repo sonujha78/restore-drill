@@ -104,10 +104,26 @@ func TestVerifyRefusesANonSandbox(t *testing.T) {
 	}
 }
 
-func TestVerifyPostgresIsNotImplementedYetAndUnverified(t *testing.T) {
-	code, out, _ := run("verify", "--config", pgCfg(t, "rdr-pg"), "--target", "pg1")
-	if code != 1 || !strings.Contains(out, "not implemented") || !strings.Contains(out, "overall: unverified") {
-		t.Fatalf("exit = %d, stdout %q, want 1 and 'not implemented'", code, out)
+func TestVerifyPostgresNeedsPgdb(t *testing.T) {
+	code, _, errOut := run("verify", "--config", pgCfg(t, "rdr-pg"), "--target", "pg1")
+	if code != 3 || !strings.Contains(errOut, "--pgdb") {
+		t.Fatalf("exit = %d, stderr %q, want 3 and a hint about --pgdb", code, errOut)
+	}
+}
+
+func TestVerifyPostgresRefusesAContainerThatIsNotRdr(t *testing.T) {
+	code, _, errOut := run("verify", "--config", pgCfg(t, "other-db"), "--target", "pg1", "--pgdb", validPGName)
+	if code != 3 || !strings.Contains(errOut, "refusing") {
+		t.Fatalf("exit = %d, stderr %q, want 3 and a refusal", code, errOut)
+	}
+}
+
+func TestVerifyPostgresRefusesNonSandboxDatabaseNames(t *testing.T) {
+	for _, name := range []string{"rdrdb", "postgres", "template1", "x; DROP DATABASE rdrdb"} {
+		code, _, errOut := run("verify", "--config", pgCfg(t, "rdr-pg"), "--target", "pg1", "--pgdb", name)
+		if code != 3 || !strings.Contains(errOut, "refusing") {
+			t.Errorf("%q: exit = %d, stderr %q, want 3 and a refusal", name, code, errOut)
+		}
 	}
 }
 

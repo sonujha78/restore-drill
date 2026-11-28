@@ -28,6 +28,7 @@ func verifyCmd(args []string, stdout, stderr io.Writer) int {
 	name := fset.String("target", "", "target name (required)")
 	sbDir := fset.String("sandbox", "", "sandbox directory the backup was restored into")
 	nowStr := fset.String("now", "", "drill clock as RFC 3339 (for tests and replay; default: the real clock)")
+	pgdb := fset.String("pgdb", "", "sandbox database the postgres backup was restored into")
 	if err := fset.Parse(args); err != nil {
 		return exitcode.ToolError
 	}
@@ -61,9 +62,7 @@ func verifyCmd(args []string, stdout, stderr io.Writer) int {
 	}
 
 	if tg.Type == "postgres_dump" {
-		fmt.Fprintf(stdout, "target %s (%s)\n  %-11s %-38s %s\noverall: unverified\n",
-			tg.Name, tg.Type, artifact.Unverified, "verify", "verify for postgres_dump is not implemented yet")
-		return exitcode.Degraded
+		return verifyPG(tg, *pgdb, now, stdout, stderr)
 	}
 
 	if *sbDir == "" {
